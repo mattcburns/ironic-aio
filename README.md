@@ -148,3 +148,7 @@ No explicit license provided; treat as internal/development unless clarified.
 
 ---
 Pull / report issues: `ghcr.io/mattcburns/ironic-aio`
+
+## AI Disclosure
+
+This repo was developed with the assistance of Github Copilot.
