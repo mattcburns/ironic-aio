@@ -1,0 +1,63 @@
+[DEFAULT]
+auth_strategy = noauth
+rpc_transport = json-rpc
+
+enabled_network_interfaces = noop
+enabled_deploy_interfaces = direct,ramdisk
+default_deploy_interface = direct
+enabled_inspect_interfaces = no-inspect,agent,redfish
+default_inspect_interface = redfish
+enable_bios_interfaces = no-bios,redfish
+enabled_boot_interfaces = redfish-virtual-media
+default_boot_interface = redfish-virtual-media
+enabled_console_interfaces = no-console
+enabled_hardware_types = redfish
+enabled_drivers = redfish
+enabled_firmware_interfaces = no-firmware,redfish
+enabled_management_interfaces = noop,redfish
+enabled_power_interfaces = fake,redfish
+enabled_raid_interfaces = no-raid,agent,redfish
+enabled_vendor_interfaces = no-vendor,redfish
+enabled_rescue_interfaces = agent
+
+default_resource_class = baremetal
+
+[database]
+connection = sqlite:////root/ironic.sqlite
+
+[deploy]
+http_root=/vmedia
+http_url=http://192.168.20.1:8080
+default_boot_option = local
+default_boot_mode = bios
+fast_track = True
+erase_devices_priority = 0
+erase_devices_metadata_priority = 10
+
+[conductor]
+automated_clean = true
+# You need to specify these even if they aren't used
+deploy_kernel = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.kernel
+deploy_ramdisk = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.initramfs
+#rescue_kernel = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.kernel
+#rescue_ramdisk = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.initramfs
+
+
+[redfish]
+use_swift = False
+kernel_append_params = nofb nomodeset systemd.journald.forward_to_console=yes  ipa-insecure=1
+deploy_iso = http://192.168.20.1:8080/ipa/ironic-centos9-ipa.iso
+
+[inspector]
+power_off = True
+extra_kernel_params = ipa-inspection-collectors=default,logs
+require_managed_boot = False
+add_ports = pxe
+keep_ports = present
+
+[auto_discovery]
+enabled = False
+driver = ipmi
+
+[service_catalog]
+endpoint_override = http://192.168.20.1:6385

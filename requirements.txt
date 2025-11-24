@@ -1,0 +1,2 @@
+ironic~=32.0.0
+python-ironicclient~=5.13
