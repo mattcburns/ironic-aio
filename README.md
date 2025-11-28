@@ -120,6 +120,10 @@ git push origin v1.2.3
 
 This produces image tags: `v1.2.3`, `1.2`, `1`, plus the commit SHA.
 
+## Upper Constraints
+
+Uses upper-constraints.txt from [2025.2](https://raw.githubusercontent.com/openstack/requirements/refs/heads/stable/2025.2/upper-constraints.txt)
+
 ## Common Commands
 
 ```bash
@@ -141,13 +145,6 @@ docker exec ironic baremetal driver list
 +| Entry point error: "Expected SQLite database file but found a directory" | Forgot to `touch ironic.sqlite` before run | Stop container, remove directory, `touch ironic.sqlite`, re-run |
 +| API not reachable on 6385 | Port not published | Include `-p 6385:6385` in run command |
 +| Config changes ignored | Container caching old config | Ensure mount path is correct and restart container |
-
-## License
-
-No explicit license provided; treat as internal/development unless clarified.
-
----
-Pull / report issues: `ghcr.io/mattcburns/ironic-aio`
 
 ## AI Disclosure
 

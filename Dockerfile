@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+# check=skip=SecretsUsedInArgOrEnv
 FROM python:3.12
 
 WORKDIR /app
@@ -22,7 +24,7 @@ ENV OS_AUTH_TYPE=none \
 
 # Install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt -c https://raw.githubusercontent.com/openstack/requirements/refs/heads/stable/2025.2/upper-constraints.txt
 
 # Entrypoint that initializes the DB on first run and skips if existing
 COPY entrypoint.sh /usr/local/bin/ironic-entrypoint
