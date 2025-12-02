@@ -1,3 +1,6 @@
 # SQLite database (host-mounted)
 ironic.sqlite
 notes.txt
+ironic.conf
+.env
+ironic/

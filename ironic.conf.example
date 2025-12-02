@@ -23,10 +23,10 @@ enabled_rescue_interfaces = agent
 default_resource_class = baremetal
 
 [database]
-connection = sqlite:////root/ironic.sqlite
+connection = sqlite:////app/ironic.sqlite
 
 [deploy]
-http_root=/vmedia
+http_root=/app/vmedia
 http_url=http://192.168.20.1:8080
 default_boot_option = local
 default_boot_mode = bios
@@ -36,7 +36,7 @@ erase_devices_metadata_priority = 10
 
 [conductor]
 automated_clean = true
-# You need to specify these even if they aren't used
+# You need to specify these even if they aren't used for Standalone Single Conductor Ironic
 deploy_kernel = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.kernel
 deploy_ramdisk = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.initramfs
 #rescue_kernel = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.kernel

@@ -4,7 +4,7 @@ FROM python:3.12
 
 WORKDIR /app
 
-EXPOSE 6385 8080
+EXPOSE 6385
 
 RUN apt-get update && apt-get install -y jq \
 	isolinux \

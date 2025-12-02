@@ -61,6 +61,65 @@ docker logs -f ironic | head -n 50     # recent startup logs
 docker exec ironic baremetal driver list
 ```
 
+## Compose Setup
+
+This repo provides a minimal two-container setup:
+- `ironic` (built from this repo) with `/app` bound to a host directory
+- `nginx` serving the vmedia directory over HTTP
+
+### Additional Files
+
+To get provisioning to work, you will need to place a copy of the Ironic Python Agent (IPA)
+iso into the vmedia/ipa folder and get yourself a cloud image (I suggest Ubuntu) to place
+into vmedia.
+
+IPA ISO: [ironic-iso](https://github.com/mattcburns/ironic-iso)
+OS Image (.img): [ubuntu](https://cloud-images.ubuntu.com/noble/current/)
+
+### Volume mounts (parameterized)
+
+Host-side paths can be customized via environment variables:
+- `IRONIC_HOST_DIR` (default `/opt/ironic`) → mounted to `/app`
+- `IRONIC_CONF` (default `/opt/ironic/ironic.conf`) → mounted to `/app/ironic.conf` (read-only)
+- `IRONIC_DB_FILE` (default `/opt/ironic/ironic.sqlite`) → mounted to `/app/ironic.sqlite`
+- `IRONIC_VMEDIA_DIR` (default `/opt/ironic/vmedia`) → mounted to `/usr/share/nginx/html` (read-only)
+  - This also needs to include a folder named `ipa` inside `vmedia` eg: `/opt/ironic/vmedia/ipa` for
+    the Ironic Python Agent (IPA) iso
+
+Create a `.env` file to set these variables:
+
+```
+cp .env.example .env
+vi .env
+```
+
+Ensure your host directory contains a valid `ironic.conf` (you can start from `ironic.conf.example`):
+
+```
+mkdir -p /opt/ironic /opt/ironic/vmedia
+cp ironic.conf.example /opt/ironic/ironic.conf
+touch /opt/ironic/ironic.sqlite
+```
+
+### Run
+
+```
+docker compose up -d
+docker compose ps
+```
+
+### Quick checks
+
+```
+curl -sSf http://localhost:6385/v1 || true
+curl -I http://localhost:8080/
+docker compose exec ironic baremetal driver list
+```
+
+### Notes
+
+- The entrypoint requires `/app/ironic.conf`. It will initialize/upgrade the SQLite DB referenced in the config.
+- If you bind mount a non-existent path for the SQLite DB on the host, Docker may create a directory; ensure the DB is a file.
 On first start the entrypoint will:
 
 - Parse DB path from `[database]` section of `ironic.conf`
