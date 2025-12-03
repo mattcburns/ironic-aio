@@ -308,4 +308,4 @@ curl -k https://localhost:6385/v1
 
 ## AI Disclosure
 
-This repo was developed with the assistance of Github Copilot.
+This repo was developed with the assistance of GitHub Copilot.
