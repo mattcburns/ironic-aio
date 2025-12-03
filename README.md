@@ -250,6 +250,62 @@ docker run --rm -it httpd:alpine htpasswd -Bbn ironicuser strongpassword > htpas
 docker compose restart nginx
 ```
 
+### Enabling TLS (HTTPS) for the Ironic API
+
+The Ironic API is served over HTTPS by default via nginx. You must provide SSL certificates for nginx to use. For development, self-signed certificates are sufficient. For production, use certificates from a trusted Certificate Authority (CA).
+
+#### Generating Self-Signed Certificates (Development)
+
+1. Create a directory for your SSL files (if not already present):
+
+```bash
+mkdir -p ssl
+```
+
+2. Generate a self-signed certificate and key:
+
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout ssl/tls.key -out ssl/tls.crt \
+  -subj "/CN=localhost"
+```
+
+- This creates `ssl/tls.crt` (certificate) and `ssl/tls.key` (private key).
+- You can adjust the `-subj` to match your hostname or IP as needed.
+
+3. The `docker-compose.yml` mounts the `ssl` directory into the nginx container:
+
+```yaml
+    volumes:
+      - ./ssl:/etc/nginx/ssl:ro
+```
+
+4. The nginx config expects these files at `/etc/nginx/ssl/tls.crt` and `/etc/nginx/ssl/tls.key`.
+
+5. Restart the nginx service:
+
+```bash
+docker compose restart nginx
+```
+
+6. Access the API securely:
+
+```
+curl -k https://localhost:6385/v1
+```
+
+#### Using Production Certificates
+
+- Obtain a certificate and key from a trusted CA (e.g., Let's Encrypt, commercial CA).
+- Place the certificate and key as `ssl/tls.crt` and `ssl/tls.key` in your project directory (or update the nginx config to match your filenames).
+- Restart the nginx service as above.
+- Remove or replace the self-signed files.
+
+#### HTTP to HTTPS Redirect
+
+- The nginx config includes a server block that redirects HTTP (port 80) requests to HTTPS (port 6385).
+- Always use `https://` for API access in production.
+
 ## AI Disclosure
 
 This repo was developed with the assistance of Github Copilot.
