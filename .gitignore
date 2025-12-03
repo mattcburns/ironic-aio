@@ -4,3 +4,4 @@ notes.txt
 ironic.conf
 .env
 ironic/
+htpasswd

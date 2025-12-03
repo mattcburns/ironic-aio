@@ -205,6 +205,51 @@ docker exec ironic baremetal driver list
 +| API not reachable on 6385 | Port not published | Include `-p 6385:6385` in run command |
 +| Config changes ignored | Container caching old config | Ensure mount path is correct and restart container |
 
+### API Security and Allowlist (nginx)
+
+By default, the Ironic API is secured behind nginx with HTTP basic authentication. You can allowlist specific IPs or subnets to bypass authentication (for example, for the Ironic Python Agent or trusted networks).
+
+- The allowlist is configured in `nginx.conf` in the `location /` block for the API reverse proxy. Look for the section marked `ALLOWLIST CONFIGURATION`.
+- To allow an IP or subnet to bypass authentication, add an `allow` line (e.g., `allow 192.168.1.0/24;`).
+- All other clients will be required to authenticate with HTTP basic auth.
+- To require authentication for everyone, comment out all `allow` lines except `deny all;`.
+
+#### Example allowlist section in `nginx.conf`:
+
+```nginx
+# --- ALLOWLIST CONFIGURATION ---
+# Add or change allowed IPs/subnets below to bypass authentication.
+# Example: allow 172.16.0.0/12; # Docker default bridge network range
+# allow 192.168.1.0/24; # Example: custom subnet
+satisfy any;
+allow 172.16.0.0/12; # Docker default bridge network range
+# allow 192.168.1.0/24; # Example: custom subnet
+deny all;
+# --- END ALLOWLIST CONFIGURATION ---
+```
+
+#### Setting up HTTP Basic Auth
+
+1. Create an `htpasswd` file (requires Docker):
+
+```bash
+docker run --rm -it httpd:alpine htpasswd -Bbn ironicuser strongpassword > htpasswd
+```
+
+2. Mount the file in your `docker-compose.yml` under the nginx service:
+
+```yaml
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./htpasswd:/etc/nginx/htpasswd:ro
+```
+
+3. Restart the nginx service:
+
+```bash
+docker compose restart nginx
+```
+
 ## AI Disclosure
 
 This repo was developed with the assistance of Github Copilot.
