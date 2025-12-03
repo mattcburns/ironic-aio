@@ -301,11 +301,6 @@ curl -k https://localhost:6385/v1
 - Restart the nginx service as above.
 - Remove or replace the self-signed files.
 
-#### HTTP to HTTPS Redirect
-
-- The nginx config includes a server block that redirects HTTP (port 80) requests to HTTPS (port 6385).
-- Always use `https://` for API access in production.
-
 ## AI Disclosure
 
 This repo was developed with the assistance of GitHub Copilot.
