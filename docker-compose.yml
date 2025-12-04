@@ -1,25 +1,23 @@
 services:
   ironic:
     build: .
-    # Port 6385 is now only accessible internally to nginx
     expose:
       - 6385
     volumes:
-      - ${IRONIC_HOST_DIR:-/opt/ironic}:/app
-      - ${IRONIC_CONF:-/opt/ironic/ironic.conf}:/app/ironic.conf:ro
-      - ${IRONIC_DB_FILE:-/opt/ironic/ironic.sqlite}:/app/ironic.sqlite
+      - ${IRONIC_CONF:-/opt/ironic/config/ironic.conf}:/app/ironic.conf:ro
+      - ${IRONIC_DB_FILE:-/opt/ironic/db/ironic.sqlite}:/app/ironic.sqlite
     restart: unless-stopped
 
   nginx:
     image: nginx:alpine
     ports:
       - 6385:6385  # Ironic API (HTTPS)
-      - 8080:8080   # VMMedia server
+      - 8080:8080   # VMedia server
     volumes:
       - ${IRONIC_VMEDIA_DIR:-/opt/ironic/vmedia}:/usr/share/nginx/html:ro
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./htpasswd:/etc/nginx/htpasswd:ro
-      - ./ssl:/etc/nginx/ssl:ro
+      - ${NGINX_CONF:-./nginx.conf}:/etc/nginx/nginx.conf:ro
+      - ${NGINX_HTPASSWD:-./htpasswd}:/etc/nginx/htpasswd:ro
+      - ${NGINX_SSL:-./ssl}:/etc/nginx/ssl:ro
     depends_on:
       - ironic
     restart: unless-stopped

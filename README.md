@@ -64,27 +64,81 @@ docker exec ironic baremetal driver list
 ## Compose Setup
 
 This repo provides a minimal two-container setup:
-- `ironic` (built from this repo) with `/app` bound to a host directory
-- `nginx` serving the vmedia directory over HTTP
+- `ironic` (built from this repo) exposing the API internally
+- `nginx` serving as a reverse proxy for the API (with TLS and auth) and serving the vmedia directory over HTTP
 
-### Additional Files
+### Directory Structure Setup
 
-To get provisioning to work, you will need to place a copy of the Ironic Python Agent (IPA)
-iso into the vmedia/ipa folder and get yourself a cloud image (I suggest Ubuntu) to place
-into vmedia.
+Create the required host directories:
 
-IPA ISO: [ironic-iso](https://github.com/mattcburns/ironic-iso)
-OS Image (.img): [ubuntu](https://cloud-images.ubuntu.com/noble/current/)
+```bash
+mkdir -p /opt/ironic/config
+mkdir -p /opt/ironic/db
+mkdir -p /opt/ironic/vmedia/ipa
+```
+
+**Directory purposes:**
+- `/opt/ironic/config/` - Ironic configuration file
+- `/opt/ironic/db/` - SQLite database file
+- `/opt/ironic/vmedia/` - HTTP-served files for virtual media boot
+- `/opt/ironic/vmedia/ipa/` - Ironic Python Agent ISO location
+
+### Required Files
+
+1. **Ironic configuration** - Copy and customize the example config:
+   ```bash
+   cp ironic.conf.example /opt/ironic/config/ironic.conf
+   vi /opt/ironic/config/ironic.conf  # Adjust as needed
+   ```
+
+2. **Database file** - Create an empty SQLite database (will be initialized on first run):
+   ```bash
+   touch /opt/ironic/db/ironic.sqlite
+   ```
+
+3. **Ironic Python Agent (IPA) ISO** - Download and place in vmedia/ipa/:
+   ```bash
+   # Example - adjust URL/version as needed
+   wget https://github.com/mattcburns/ironic-iso/releases/download/vX.Y.Z/ironic-python-agent.iso \
+     -O /opt/ironic/vmedia/ipa/ironic-python-agent.iso
+   ```
+   IPA ISO releases: [ironic-iso](https://github.com/mattcburns/ironic-iso)
+
+4. **Cloud images** - Place OS images in vmedia/ for deployment:
+   ```bash
+   # Example - Ubuntu Noble
+   wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img \
+     -O /opt/ironic/vmedia/ubuntu-noble.img
+   ```
+   Ubuntu images: [ubuntu](https://cloud-images.ubuntu.com/noble/current/)
+
+5. **SSL certificates** - For HTTPS API access (see "Enabling TLS" section below):
+   ```bash
+   mkdir -p ssl
+   # Place or generate tls.crt and tls.key in ./ssl/
+   ```
+
+6. **HTTP Basic Auth** - For API authentication (see "API Security" section below):
+   ```bash
+   mkdir -p htpasswd
+   # Create htpasswd file in ./htpasswd
+   ```
 
 ### Volume mounts (parameterized)
 
 Host-side paths can be customized via environment variables:
-- `IRONIC_HOST_DIR` (default `/opt/ironic`) → mounted to `/app`
-- `IRONIC_CONF` (default `/opt/ironic/ironic.conf`) → mounted to `/app/ironic.conf` (read-only)
-- `IRONIC_DB_FILE` (default `/opt/ironic/ironic.sqlite`) → mounted to `/app/ironic.sqlite`
+
+**Ironic service:**
+- `IRONIC_CONF` (default `/opt/ironic/config/ironic.conf`) → mounted to `/app/ironic.conf` (read-only)
+- `IRONIC_DB_FILE` (default `/opt/ironic/db/ironic.sqlite`) → mounted to `/app/ironic.sqlite`
 - `IRONIC_VMEDIA_DIR` (default `/opt/ironic/vmedia`) → mounted to `/usr/share/nginx/html` (read-only)
   - This also needs to include a folder named `ipa` inside `vmedia` eg: `/opt/ironic/vmedia/ipa` for
     the Ironic Python Agent (IPA) iso
+
+**Nginx service:**
+- `NGINX_CONF` (default `./nginx.conf`) → mounted to `/etc/nginx/nginx.conf` (read-only)
+- `NGINX_HTPASSWD` (default `./htpasswd`) → mounted to `/etc/nginx/htpasswd` (read-only)
+- `NGINX_SSL` (default `./ssl`) → mounted to `/etc/nginx/ssl` (read-only)
 
 Create a `.env` file to set these variables:
 
@@ -93,12 +147,12 @@ cp .env.example .env
 vi .env
 ```
 
-Ensure your host directory contains a valid `ironic.conf` (you can start from `ironic.conf.example`):
+Ensure your host directories contain a valid `ironic.conf` (you can start from `ironic.conf.example`):
 
 ```
-mkdir -p /opt/ironic /opt/ironic/vmedia
-cp ironic.conf.example /opt/ironic/ironic.conf
-touch /opt/ironic/ironic.sqlite
+mkdir -p /opt/ironic/config /opt/ironic/db /opt/ironic/vmedia
+cp ironic.conf.example /opt/ironic/config/ironic.conf
+touch /opt/ironic/db/ironic.sqlite
 ```
 
 ### Run
