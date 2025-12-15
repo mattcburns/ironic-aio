@@ -6,6 +6,7 @@ services:
     volumes:
       - ${IRONIC_CONF:-/opt/ironic/config/ironic.conf}:/app/ironic.conf:ro
       - ${IRONIC_DB_FILE:-/opt/ironic/db/ironic.sqlite}:/app/ironic.sqlite
+      - ${IRONIC_VMEDIA_DIR:-/opt/ironic/vmedia}:/app/vmedia
     restart: unless-stopped
 
   nginx:

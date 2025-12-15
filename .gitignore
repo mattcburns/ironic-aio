@@ -5,3 +5,4 @@ ironic.conf
 .env
 ironic/
 htpasswd
+config/
