@@ -35,7 +35,6 @@ erase_devices_metadata_priority = 10
 
 [conductor]
 automated_clean = true
-# You need to specify these even if they aren't used for Standalone Single Conductor Ironic
 deploy_kernel = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.kernel
 deploy_ramdisk = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.initramfs
 #rescue_kernel = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.kernel
@@ -44,8 +43,9 @@ deploy_ramdisk = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.initramf
 
 [redfish]
 use_swift = False
-kernel_append_params = nofb nomodeset systemd.journald.forward_to_console=yes ipa-insecure=1 ipa-debug=1
-deploy_iso = http://192.168.20.1:8080/ipa/ironic-centos9-ipa.iso
+kernel_append_params = nofb nomodeset systemd.journald.forward_to_console=yes  ipa-insecure=1
+# Only use deploy_iso if DHCP is enabled and no kernel params need to be injected
+# deploy_iso = http://192.168.20.1:8080/ipa/ironic-centos9-ipa.iso
 
 [inspector]
 power_off = True
