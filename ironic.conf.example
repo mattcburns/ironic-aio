@@ -29,7 +29,6 @@ connection = sqlite:////app/ironic.sqlite
 http_root=/app/vmedia
 http_url=http://192.168.20.1:8080
 default_boot_option = local
-default_boot_mode = bios
 fast_track = True
 erase_devices_priority = 0
 erase_devices_metadata_priority = 10
@@ -45,7 +44,7 @@ deploy_ramdisk = http://192.168.20.1:8080/ipa/ipa-centos9-stable-2025.2.initramf
 
 [redfish]
 use_swift = False
-kernel_append_params = nofb nomodeset systemd.journald.forward_to_console=yes  ipa-insecure=1
+kernel_append_params = nofb nomodeset systemd.journald.forward_to_console=yes ipa-insecure=1 ipa-debug=1
 deploy_iso = http://192.168.20.1:8080/ipa/ironic-centos9-ipa.iso
 
 [inspector]
@@ -57,7 +56,6 @@ keep_ports = present
 
 [auto_discovery]
 enabled = False
-driver = ipmi
 
 [service_catalog]
 endpoint_override = http://192.168.20.1:6385
