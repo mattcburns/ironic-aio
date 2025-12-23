@@ -313,7 +313,7 @@ cli and assumes that `docker compose exec ironic` is pre-pended for all operatio
 1. Make the node manageable: `baremetal node manage <node id>`
 1. Apply the network data for cleaning: `baremetal node set --network-data /app/servers/<server>/network_data.json <node id>`
 1. Make the node available for provisioning and trigger a cleaning: `baremetal node provide <node id>`
-1. Configure the OS to provision: `baremetal node set <node id> --instance-info image_source=<url to os image> --instance-info image_checksum=<os image sha265sum>`
+1. Configure the OS to provision: `baremetal node set <node id> --instance-info image_source=<url to os image> --instance-info image_checksum=<os image sha256sum>`
 1. Provision the node: `baremetal node deploy <node id>`
 
 ## Database Handling
