@@ -75,6 +75,9 @@ Create the required host directories:
 mkdir -p /opt/ironic/config
 mkdir -p /opt/ironic/db
 mkdir -p /opt/ironic/vmedia/ipa
+mkdir -p /opt/ironic/vmedia/redfish
+mkdir -p /opt/ironic/ssl
+mkdir -p /opt/ironic/servers
 ```
 
 **Directory purposes:**
@@ -82,6 +85,9 @@ mkdir -p /opt/ironic/vmedia/ipa
 - `/opt/ironic/db/` - SQLite database file
 - `/opt/ironic/vmedia/` - HTTP-served files for virtual media boot
 - `/opt/ironic/vmedia/ipa/` - Ironic Python Agent ISO location
+- `/opt/ironic/vmedia/redfish` - Ironic Python Agent ISO Cache
+- `/opt/ironic/ssl/` - SSL certificates for HTTPS
+- `/opt/ironic/servers/` - Contains the static configuration for managed nodes
 
 ### Required Files
 
@@ -96,13 +102,19 @@ mkdir -p /opt/ironic/vmedia/ipa
    touch /opt/ironic/db/ironic.sqlite
    ```
 
-3. **Ironic Python Agent (IPA) ISO** - Download and place in vmedia/ipa/:
+3. **Ironic Python Agent (IPA) components** - Download kernel, initramfs, and ESP image to vmedia/ipa/:
    ```bash
    # Example - adjust URL/version as needed
-   wget https://github.com/mattcburns/ironic-iso/releases/download/vX.Y.Z/ironic-python-agent.iso \
-     -O /opt/ironic/vmedia/ipa/ironic-python-agent.iso
+   cd /opt/ironic/vmedia/ipa
+   wget https://github.com/mattcburns/ironic-iso/releases/download/vX.Y.Z/ironic-python-agent-kernel \
+     -O ironic-python-agent-kernel
+   wget https://github.com/mattcburns/ironic-iso/releases/download/vX.Y.Z/ironic-python-agent-initramfs \
+     -O ironic-python-agent-initramfs
+   wget https://github.com/mattcburns/ironic-iso/releases/download/vX.Y.Z/ironic-python-agent-esp.img \
+     -O ironic-python-agent-esp.img
    ```
-   IPA ISO releases: [ironic-iso](https://github.com/mattcburns/ironic-iso)
+   Ironic will generate the ISO on-the-fly during virtual media boot using these components.
+   IPA releases: [ironic-iso](https://github.com/mattcburns/ironic-iso)
 
 4. **Cloud images** - Place OS images in vmedia/ for deployment:
    ```bash
@@ -133,12 +145,111 @@ Host-side paths can be customized via environment variables:
 - `IRONIC_DB_FILE` (default `/opt/ironic/db/ironic.sqlite`) → mounted to `/app/ironic.sqlite`
 - `IRONIC_VMEDIA_DIR` (default `/opt/ironic/vmedia`) → mounted to `/usr/share/nginx/html` (read-only)
   - This also needs to include a folder named `ipa` inside `vmedia` eg: `/opt/ironic/vmedia/ipa` for
-    the Ironic Python Agent (IPA) iso
+    the Ironic Python Agent (IPA) components (kernel, initramfs, ESP image) used to generate the IPA ISO on-the-fly
+- `IRONIC_SERVERS_DIR` (default `/opt/ironic/servers`) → mounted to `/app/servers` (read-only)
+  - Contains a subdirectory for each server to be managed (e.g., `server01`, `server02`)
+  - Each server subdirectory should contain:
+    - `network_data.json` - Basic static network configuration for the server
+    - `configdrive/` - Directory structure for Ironic to build a config drive from during provisioning
 
 **Nginx service:**
 - `NGINX_CONF` (default `./nginx.conf`) → mounted to `/etc/nginx/nginx.conf` (read-only)
 - `NGINX_HTPASSWD` (default `./htpasswd`) → mounted to `/etc/nginx/htpasswd` (read-only)
 - `NGINX_SSL` (default `./ssl`) → mounted to `/etc/nginx/ssl` (read-only)
+
+### Example Server Configuration
+
+Each server in the `IRONIC_SERVERS_DIR` should have its own subdirectory with network and config drive data. Here's an example structure for a server named `server01`:
+
+```
+/opt/ironic/servers/
+└── server01/
+    ├── network_data.json
+    └── configdrive/
+        ├── openstack/
+        │   └── latest/
+        │       ├── meta_data.json
+        │       ├── user_data
+        │       └── network_data.json
+        └── etc/
+            └── (optional additional config files)
+```
+
+**Example `network_data.json`** (basic static network configuration):
+
+```json
+{
+  "links": [
+    {
+      "id": "eno1",
+      "type": "phy",
+      "ethernet_mac_address": "aa:bb:cc:dd:ee:ff",
+      "mtu": 1500
+    }
+  ],
+  "networks": [
+    {
+      "id": "network0",
+      "type": "ipv4",
+      "link": "eno1",
+      "ip_address": "192.168.1.100",
+      "netmask": "255.255.255.0",
+      "routes": [
+        {
+          "network": "0.0.0.0",
+          "netmask": "0.0.0.0",
+          "gateway": "192.168.1.1"
+        }
+      ]
+    }
+  ],
+  "services": [
+    {
+      "type": "dns",
+      "address": "8.8.8.8"
+    },
+    {
+      "type": "dns",
+      "address": "8.8.4.4"
+    }
+  ]
+}
+```
+
+**Example `configdrive/openstack/latest/meta_data.json`**:
+
+```json
+{
+  "uuid": "server01-uuid",
+  "hostname": "server01.example.com",
+  "name": "server01",
+  "public_keys": {
+    "default": "ssh-rsa AAAAB3NzaC1yc2E... user@host"
+  }
+}
+```
+
+**Example `configdrive/openstack/latest/user_data`** (cloud-init script):
+
+```yaml
+#cloud-config
+hostname: server01
+fqdn: server01.example.com
+manage_etc_hosts: true
+
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2E... user@host
+
+packages:
+  - curl
+  - vim
+
+runcmd:
+  - echo "Server provisioned successfully" > /etc/motd
+```
 
 Create a `.env` file to set these variables:
 
@@ -150,7 +261,7 @@ vi .env
 Ensure your host directories contain a valid `ironic.conf` (you can start from `ironic.conf.example`):
 
 ```
-mkdir -p /opt/ironic/config /opt/ironic/db /opt/ironic/vmedia
+mkdir -p /opt/ironic/config /opt/ironic/db /opt/ironic/vmedia /opt/ironic/ssl /opt/ironic/htpasswd
 cp ironic.conf.example /opt/ironic/config/ironic.conf
 touch /opt/ironic/db/ironic.sqlite
 ```
@@ -192,6 +303,18 @@ docker logs -f ironic | grep -i 'Loading'  # optional validation
 ```
 
 Minimal relevant defaults are already set (redfish only, json-rpc transport, sqlite). Adjust hardware driver settings as needed for your environment.
+
+## Node Management - CLI
+
+All of the commands below assume using the docker container for the baremetal
+cli and assumes that `docker compose exec ironic` is pre-pended for all operations.
+
+1. Enroll the node by creating it in the API: `baremetal node create --driver redfish --driver-info redfish_address=<redfish https endpoint> --driver-info redfish_username=<bmc user> --driver-info redfish_password=<bmc password> --driver-info redfish_verify_ca=False`
+1. Make the node manageable: `baremetal node manage <node id>`
+1. Apply the network data for cleaning: `baremetal node set --network-data /app/servers/<server>/network_data.json <node id>`
+1. Make the node available for provisioning and trigger a cleaning: `baremetal node provide <node id>`
+1. Configure the OS to provision: `baremetal node set <node id> --instance-info image_source=<url to os image> --instance-info image_checksum=<os image sha256sum>`
+1. Provision the node: `baremetal node deploy <node id>`
 
 ## Database Handling
 
@@ -250,14 +373,6 @@ curl -X POST http://localhost:6385/v1/nodes -H 'Content-Type: application/json' 
 # Show enabled drivers
 docker exec ironic baremetal driver list
 ```
-
-## Troubleshooting
-
-| Symptom | Cause | Fix |
-+|---------|-------|-----|
-+| Entry point error: "Expected SQLite database file but found a directory" | Forgot to `touch ironic.sqlite` before run | Stop container, remove directory, `touch ironic.sqlite`, re-run |
-+| API not reachable on 6385 | Port not published | Include `-p 6385:6385` in run command |
-+| Config changes ignored | Container caching old config | Ensure mount path is correct and restart container |
 
 ### API Security and Allowlist (nginx)
 
