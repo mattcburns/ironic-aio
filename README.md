@@ -145,7 +145,7 @@ Host-side paths can be customized via environment variables:
 - `IRONIC_DB_FILE` (default `/opt/ironic/db/ironic.sqlite`) → mounted to `/app/ironic.sqlite`
 - `IRONIC_VMEDIA_DIR` (default `/opt/ironic/vmedia`) → mounted to `/usr/share/nginx/html` (read-only)
   - This also needs to include a folder named `ipa` inside `vmedia` eg: `/opt/ironic/vmedia/ipa` for
-    the Ironic Python Agent (IPA) iso
+    the Ironic Python Agent (IPA) components (kernel, initramfs, ESP image) used to generate the IPA ISO on-the-fly
 - `IRONIC_SERVERS_DIR` (default `/opt/ironic/servers`) → mounted to `/app/servers` (read-only)
   - Contains a subdirectory for each server to be managed (e.g., `server01`, `server02`)
   - Each server subdirectory should contain:
