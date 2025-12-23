@@ -85,7 +85,7 @@ mkdir -p /opt/ironic/servers
 - `/opt/ironic/db/` - SQLite database file
 - `/opt/ironic/vmedia/` - HTTP-served files for virtual media boot
 - `/opt/ironic/vmedia/ipa/` - Ironic Python Agent ISO location
-- `/opt/ironic/vmedia/redfish` - Ironic Pyton Agent ISO Cache
+- `/opt/ironic/vmedia/redfish` - Ironic Python Agent ISO Cache
 - `/opt/ironic/ssl/` - SSL certificates for HTTPS
 - `/opt/ironic/servers/` - Contains the static configuration for managed nodes
 
