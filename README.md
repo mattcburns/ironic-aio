@@ -157,6 +157,22 @@ Host-side paths can be customized via environment variables:
 - `NGINX_HTPASSWD` (default `./htpasswd`) → mounted to `/etc/nginx/htpasswd` (read-only)
 - `NGINX_SSL` (default `./ssl`) → mounted to `/etc/nginx/ssl` (read-only)
 
+Create a `.env` file to set these variables:
+
+```
+cp .env.example .env
+vi .env
+```
+
+Ensure your host directories contain a valid `ironic.conf` (you can start from `ironic.conf.example`):
+
+```
+mkdir -p /opt/ironic/config /opt/ironic/db /opt/ironic/vmedia /opt/ironic/ssl /opt/ironic/htpasswd
+cp ironic.conf.example /opt/ironic/config/ironic.conf
+touch /opt/ironic/db/ironic.sqlite
+```
+
+
 ### Example Server Configuration
 
 Each server in the `IRONIC_SERVERS_DIR` should have its own subdirectory with network and config drive data. Here's an example structure for a server named `server01`:
@@ -251,20 +267,6 @@ runcmd:
   - echo "Server provisioned successfully" > /etc/motd
 ```
 
-Create a `.env` file to set these variables:
-
-```
-cp .env.example .env
-vi .env
-```
-
-Ensure your host directories contain a valid `ironic.conf` (you can start from `ironic.conf.example`):
-
-```
-mkdir -p /opt/ironic/config /opt/ironic/db /opt/ironic/vmedia /opt/ironic/ssl /opt/ironic/htpasswd
-cp ironic.conf.example /opt/ironic/config/ironic.conf
-touch /opt/ironic/db/ironic.sqlite
-```
 
 ### Run
 
