@@ -7,7 +7,6 @@ services:
       - ${IRONIC_CONF:-/opt/ironic/config/ironic.conf}:/app/ironic.conf:ro
       - ${IRONIC_DB_FILE:-/opt/ironic/db/ironic.sqlite}:/app/ironic.sqlite
       - ${IRONIC_VMEDIA_DIR:-/opt/ironic/vmedia}:/app/vmedia
-      - ${IRONIC_SERVERS_DIR:-/opt/ironic/servers}:/app/servers
     restart: unless-stopped
 
   nginx:
