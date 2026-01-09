@@ -214,7 +214,86 @@ cli and assumes that `docker compose exec ironic` is pre-pended for all operatio
 1. Apply the network data for cleaning: `baremetal node set --network-data /app/servers/<server>/network_data.json <node id>`
 1. Make the node available for provisioning and trigger a cleaning: `baremetal node provide <node id>`
 1. Configure the OS to provision: `baremetal node set <node id> --instance-info image_source=<url to os image> --instance-info image_checksum=<os image sha256sum>`
-1. Provision the node: `baremetal node deploy <node id>`
+1. Provision the node: `baremetal node deploy <node id> --configdrive <some cloudinit json, optional>`
+
+## Node Management - API
+
+Full API specification can be found at [Bare Metal API](https://docs.openstack.org/api-ref/baremetal/)
+Pay special attention to the API version header and the auth will be the info set for nginx.
+
+- [List Nodes](https://docs.openstack.org/api-ref/baremetal/#list-nodes)
+- [Show Node](https://docs.openstack.org/api-ref/baremetal/#show-node-details)
+- [Set Node Details](https://docs.openstack.org/api-ref/baremetal/#update-node)
+
+  `PATCH /nodes/<node_id>`
+  ```text
+  BODY:
+    {
+      "op": "add",
+      "path": "/instance_info/image_source",
+      "value": "http://server:6385/noble-server-cloudimg-amd64.img"
+    },
+    {
+      "op": "add",
+      "path": "/instance_info/image_checksum",
+      "value": "<sha256sum>"
+    }
+    ```
+
+- [Provision Node](https://docs.openstack.org/api-ref/baremetal/#change-node-provision-state)
+
+  `PUT /nodes/<node_id>/states/provision`
+  ```text
+  BODY:
+  {
+    "target": "active",
+    "configdrive": {
+      "network_data":{
+          "links": [
+              {
+                "id": "<some_port_id>",
+                "type": "phy",
+                "ethernet_mac_address": "<mac_address>"
+              }
+            ],
+        "networks": [
+            {
+                "id": "network0",
+                "type": "ipv4",
+                "link": "<same_port_id_as_above>",
+                "ip_address": "<ip_address>",
+                "netmask": "<netmask>",
+                "network_id": "<same_network_id_as_above>",
+                "routes": [
+                  {
+                    "network": "0.0.0.0",
+                    "netmask": "0.0.0.0",
+                    "gateway": "<default_gateway>"
+                  }
+                ]
+            }
+          ],
+        "services": [
+          {"type": "dns", "address": "8.8.8.8"}
+        ]
+      },
+      "meta_data": {
+        "public_keys": {
+          "admin": "<ssh_public_key_for_ubuntu_user>"
+        }
+      }
+    }
+  }
+  ```
+
+- [Delete Node](https://docs.openstack.org/api-ref/baremetal/#change-node-provision-state)
+
+  `PUT /nodes/<node_id>/states/provision`
+  ```text
+  {
+    "target": "deleted"
+  }
+  ```
 
 ## Database Handling
 
