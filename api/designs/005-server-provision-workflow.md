@@ -1,8 +1,8 @@
-# Design 004: Server Provision Workflow
+# Design 005: Server Provision Workflow
 
 **Status:** To Be Implemented
 
-**Depends On:** Design 003
+**Depends On:** Design 004
 
 ## Overview
 
@@ -127,7 +127,9 @@ async def get_provision_status(
 ### 4. MCP Tools (mcp_tools/provision.py)
 
 ```python
-@mcp_server.tool()
+from app import mcp  # Import the shared MCP instance
+
+@mcp.tool()
 async def provision_server(
     image_id: str,
     server_id: Optional[str] = None,
@@ -153,7 +155,7 @@ async def provision_server(
     result = await service.provision_server(request)
     return result.model_dump()
 
-@mcp_server.tool()
+@mcp.tool()
 async def check_provision_status(operation_id: str) -> dict:
     """
     Check the status of a server provisioning operation.

@@ -1,8 +1,8 @@
-# Design 003: Server List Business Process
+# Design 004: Server List Business Process
 
 **Status:** To Be Implemented
 
-**Depends On:** Design 002
+**Depends On:** Design 003
 
 ## Overview
 
@@ -106,7 +106,9 @@ async def get_server(
 ### 4. MCP Tools (mcp_tools/server.py)
 
 ```python
-@mcp_server.tool()
+from app import mcp  # Import the shared MCP instance
+
+@mcp.tool()
 async def list_servers(
     provision_state: Optional[str] = None,
     resource_class: Optional[str] = None,
@@ -127,7 +129,7 @@ async def list_servers(
     result = await service.list_servers(...)
     return result.model_dump()
 
-@mcp_server.tool()
+@mcp.tool()
 async def get_server(server_id: str) -> dict:
     """
     Get detailed information about a specific server.

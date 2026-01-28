@@ -1,8 +1,8 @@
-# Design 005: Server Unprovision Workflow
+# Design 006: Server Unprovision Workflow
 
 **Status:** To Be Implemented
 
-**Depends On:** Design 003
+**Depends On:** Design 004
 
 ## Overview
 
@@ -97,7 +97,9 @@ async def get_unprovision_status(
 ### 4. MCP Tools (mcp_tools/unprovision.py)
 
 ```python
-@mcp_server.tool()
+from app import mcp  # Import the shared MCP instance
+
+@mcp.tool()
 async def unprovision_server(server_id: str, clean: bool = True) -> dict:
     """
     Unprovision a server, returning it to available state.
@@ -111,7 +113,7 @@ async def unprovision_server(server_id: str, clean: bool = True) -> dict:
     """
     ...
 
-@mcp_server.tool()
+@mcp.tool()
 async def check_unprovision_status(operation_id: str) -> dict:
     """
     Check the status of a server unprovisioning operation.

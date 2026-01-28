@@ -11,7 +11,7 @@ This design adds the OpenStack Ironic client integration, establishing the found
 ## Goals
 
 1. Create a reusable Ironic client wrapper
-2. Handle OpenStack authentication (Keystone or noauth)
+2. Handle noauth authentication for standalone Ironic
 3. Implement connection pooling and error handling
 4. Add Ironic connectivity to health checks
 5. Provide async-compatible interface
@@ -54,11 +54,8 @@ class IronicClient:
 ### 2. Configuration Updates
 
 Add to Settings:
-- `ironic_auth_type`: "none" | "keystone"
-- `ironic_username`: Optional keystone username
-- `ironic_password`: Optional keystone password
-- `ironic_project_name`: Optional keystone project
-- `ironic_auth_url`: Optional keystone auth URL
+- `ironic_api_url`: Ironic API endpoint (default: "http://localhost:6385")
+- `ironic_api_version`: Ironic API microversion (default: "1.82")
 
 ### 3. Health Check Enhancement
 
@@ -95,14 +92,14 @@ api/
 ## Testing Requirements
 
 1. Mock OpenStack SDK for unit tests
-2. Test authentication modes (none, keystone)
+2. Test noauth connection setup
 3. Test error handling for connection failures
 4. Test health check with Ironic status
 
 ## Acceptance Criteria
 
 - [ ] IronicClient class implemented with async support
-- [ ] Both noauth and keystone authentication supported
+- [ ] Noauth authentication configured for standalone Ironic
 - [ ] Health check includes Ironic connectivity status
 - [ ] Proper error handling for connection failures
 - [ ] All tests pass with mocked Ironic API

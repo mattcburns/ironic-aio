@@ -16,31 +16,40 @@ This design establishes the foundational architecture for the ironic-aio API sid
 
 ## Architecture
 
+The API uses a **unified single-process architecture** where MCP is mounted as SSE (Server-Sent Events) endpoints within the FastAPI application. This provides:
+
+- **Single container entrypoint**: One `uvicorn` command starts everything
+- **Shared resources**: Both interfaces share the same service layer and connections
+- **Simplified deployment**: No process manager or multiple ports needed
+
 ```
-┌─────────────────┐     ┌─────────────────┐
-│   REST API      │     │   MCP Server    │
-│   (FastAPI)     │     │   (mcp lib)     │
-└────────┬────────┘     └────────┬────────┘
-         │                       │
-         └───────────┬───────────┘
-                     │
-         ┌───────────▼───────────┐
-         │    Service Layer      │
-         │  (Business Logic)     │
-         └───────────┬───────────┘
-                     │
-         ┌───────────▼───────────┐
-         │   Ironic Client       │
-         │  (OpenStack SDK)      │
-         └───────────────────────┘
+┌─────────────────────────────────────────┐
+│           FastAPI Application           │
+│         (Single uvicorn process)        │
+├─────────────────┬───────────────────────┤
+│   REST Routes   │   MCP SSE Endpoints   │
+│   (/health,     │   (/mcp)              │
+│    /servers)    │                       │
+└────────┬────────┴───────────┬───────────┘
+         │                    │
+         └────────┬───────────┘
+                  │
+         ┌────────▼────────┐
+         │  Service Layer  │
+         │ (Business Logic)│
+         └────────┬────────┘
+                  │
+         ┌────────▼────────┐
+         │  Ironic Client  │
+         │ (OpenStack SDK) │
+         └─────────────────┘
 ```
 
 ## Project Structure
 
 ```
 api/
-├── app.py                  # FastAPI application entry point
-├── mcp_server.py           # MCP server entry point
+├── app.py                  # FastAPI application entry point (includes MCP)
 ├── config.py               # Configuration management
 ├── requirements.txt        # Python dependencies
 ├── README.md               # Documentation with dependency justifications
@@ -51,7 +60,7 @@ api/
 ├── routers/                # REST API route handlers
 │   ├── __init__.py
 │   └── health.py           # Health check routes
-├── mcp_tools/              # MCP tool definitions
+├── mcp_tools/              # MCP tool definitions (mounted via SSE in app.py)
 │   ├── __init__.py
 │   └── health.py           # Health check MCP tools
 ├── schemas/                # Pydantic models for request/response
@@ -123,13 +132,33 @@ async def get_health(service: HealthService = Depends(get_health_service)):
     return await service.check_health()
 ```
 
-### 4. MCP Tools
+### 4. MCP Server Integration
 
-MCP tools are also thin wrappers calling the same services:
+The MCP server is created and mounted as SSE endpoints in app.py:
+
+```python
+# app.py
+from mcp.server.fastmcp import FastMCP
+
+# Create MCP server
+mcp = FastMCP("ironic-aio")
+
+# Import MCP tools (registers them with the mcp instance)
+from mcp_tools import health  # noqa: F401
+
+# Mount MCP SSE endpoints
+app.mount("/mcp", mcp.sse_app())
+```
+
+### 5. MCP Tools
+
+MCP tools are thin wrappers calling the same services:
 
 ```python
 # mcp_tools/health.py
-@mcp_server.tool()
+from app import mcp  # Import the shared MCP instance
+
+@mcp.tool()
 async def check_health() -> dict:
     """Check the health of the ironic-aio API."""
     service = get_health_service()
@@ -137,7 +166,7 @@ async def check_health() -> dict:
     return result.model_dump()
 ```
 
-### 5. Shared Schemas
+### 6. Shared Schemas
 
 Pydantic models are shared between REST and MCP:
 
@@ -157,6 +186,17 @@ The FastAPI application will auto-generate OpenAPI specs. Additional metadata:
 - Description: "Business process API for OpenStack Ironic operations"
 - Version: "0.1.0"
 
+## API Endpoints
+
+The unified application exposes:
+
+| Path | Purpose |
+|------|---------|
+| `/health` | REST health check endpoint |
+| `/docs` | Swagger UI documentation |
+| `/openapi.json` | OpenAPI specification |
+| `/mcp` | MCP SSE endpoint for AI tool integration |
+
 ## Testing Requirements
 
 1. **Unit tests for services**: Test business logic in isolation
@@ -170,18 +210,22 @@ The FastAPI application will auto-generate OpenAPI specs. Additional metadata:
 - [ ] All dependencies installed and documented in README.md
 - [ ] Configuration management working with environment variables
 - [ ] Health check service implemented
-- [ ] Health check REST endpoint returns valid response
-- [ ] Health check MCP tool returns valid response
+- [ ] Health check REST endpoint returns valid response at `/health`
+- [ ] Health check MCP tool returns valid response via `/mcp`
 - [ ] OpenAPI spec accessible at `/docs` and `/openapi.json`
 - [ ] All tests pass with >80% coverage
-- [ ] Both `app.py` and `mcp_server.py` can start without errors
+- [ ] Single entrypoint `uvicorn app:app` starts both REST and MCP interfaces
 
 ## Documentation Requirements
 
 The `api/README.md` must include:
 
 1. **Development Setup**: Virtual environment creation and dependency installation
-2. **Running the API**: Commands to start REST API and MCP server
+2. **Running the API**: Single command to start the unified server:
+   ```bash
+   # Start the API (serves both REST and MCP)
+   uvicorn app:app --host 0.0.0.0 --port 8000
+   ```
 3. **Running Tests**: Include the following commands:
    ```bash
    # Run all tests
