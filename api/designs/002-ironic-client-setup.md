@@ -8,6 +8,17 @@
 
 This design adds the OpenStack Ironic client integration, establishing the foundation for all Ironic API interactions. It creates a reusable client wrapper that handles authentication, connection management, and common Ironic operations.
 
+## Architecture Principles
+
+### Stateless Design
+
+The Ironic client wrapper follows the stateless architecture:
+
+- **No connection caching**: Connections are created per-request or use lightweight pooling without local state
+- **Ironic is the source of truth**: All queries go directly to Ironic; no local caching of node data
+- **Idempotent operations**: Client methods can be safely retried without side effects
+- **No operation tracking**: The client does not maintain operation history; Ironic tracks node state transitions
+
 ## Goals
 
 1. Create a reusable Ironic client wrapper

@@ -8,6 +8,17 @@
 
 This design implements the server enrollment business process - adding new physical servers to Ironic management. Enrollment is the first step in the server lifecycle, allowing new hardware to be registered before it can be provisioned.
 
+## Architecture Principles
+
+### Stateless Design
+
+The enrollment workflow is stateless:
+
+- **No enrollment tracking table**: Ironic stores the enrolled node; we don't maintain a separate record
+- **Idempotent validation**: BMC connectivity checks can be retried without side effects
+- **Direct pass-through**: Enrollment creates the node in Ironic and returns the result immediately
+- **No pending states**: There is no "pending enrollment" state in the API; nodes are either in Ironic or not
+
 ## Goals
 
 1. Implement server enrollment as an atomic business operation

@@ -8,6 +8,22 @@
 
 This design implements server unprovisioning (cleaning/decommissioning) - returning a provisioned server to an available state. This is the counterpart to the provisioning workflow.
 
+## Architecture Principles
+
+### Stateless Design
+
+The unprovisioning workflow is stateless:
+
+- **Ironic tracks all state**: Unprovision status is derived from Ironic's `provision_state` field
+- **No operation database**: The "operation_id" is the Ironic node UUID; status is queried from Ironic
+- **No cleanup orchestrator**: We trigger Ironic's cleaning process; Ironic handles the workflow
+- **Idempotent status checks**: Status queries are read-only operations against Ironic
+
+Operation tracking follows the same pattern as provisioning:
+- `provision_state: cleaning` → status: "in_progress"
+- `provision_state: available` → status: "completed"
+- `provision_state: clean failed` → status: "failed"
+
 ## Goals
 
 1. Implement server unprovisioning as an atomic business operation

@@ -8,6 +8,18 @@
 
 This design implements the server provisioning business process - taking an available server through the complete provisioning workflow. This is a core business capability that orchestrates multiple Ironic API calls into a single, trackable operation.
 
+## Architecture Principles
+
+### Stateless Design
+
+The provisioning workflow is stateless:
+
+- **Ironic tracks all state**: Provisioning status is derived from Ironic's `provision_state` field
+- **No operation database**: The "operation_id" is simply the Ironic node UUID; status is queried from Ironic
+- **No workflow orchestrator**: We trigger Ironic's state machine; Ironic handles the provisioning workflow
+- **Idempotent status checks**: Status queries are read-only operations against Ironic
+- **No progress persistence**: Progress percentage is derived from Ironic's current provision_state
+
 ## Goals
 
 1. Implement server provisioning as an atomic business operation
@@ -173,9 +185,17 @@ async def check_provision_status(operation_id: str) -> dict:
 
 ## Operation Tracking
 
-For MVP, operation tracking will use in-memory storage with the operation_id being the Ironic node UUID. Status is derived from the current Ironic node state.
+Operation tracking is **stateless** - the `operation_id` returned is the Ironic node UUID. Status is always derived from querying Ironic's current node state:
 
-Future enhancement: Add persistent operation log for audit trail.
+- `provision_state: deploying` → status: "in_progress"
+- `provision_state: active` → status: "completed"
+- `provision_state: deploy failed` → status: "failed"
+
+This approach means:
+- No local operation database required
+- Status is always accurate (directly from Ironic)
+- Multiple API instances return consistent results
+- API restarts don't lose operation tracking
 
 ## Project Structure Additions
 

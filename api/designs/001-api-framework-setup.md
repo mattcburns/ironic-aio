@@ -14,7 +14,24 @@ This design establishes the foundational architecture for the ironic-aio API sid
 4. Create configuration management
 5. Implement basic health check endpoint as proof of concept
 
-## Architecture
+## Architecture Principles
+
+### Stateless Design
+
+This API is designed to be **completely stateless**:
+
+- **Ironic is the source of truth**: All server state, operation status, and configuration is stored in Ironic
+- **No local database**: The API does not maintain its own database or persistent storage
+- **Pass-through operations**: The API wraps Ironic operations to simplify usage, but does not cache or store results
+- **Horizontal scalability**: Multiple API instances can run without coordination
+- **Resilience**: API restarts do not lose state; all state is reconstructable from Ironic
+
+This stateless approach enables:
+- Simple deployment and scaling
+- Easy debugging (single source of truth)
+- Future authentication can be added as a layer without state migration concerns
+
+### Unified Single-Process Architecture
 
 The API uses a **unified single-process architecture** where MCP is mounted as SSE (Server-Sent Events) endpoints within the FastAPI application. This provides:
 

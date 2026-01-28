@@ -8,6 +8,17 @@
 
 This design implements the first business process: listing and discovering servers (Ironic nodes) with enriched information. This transforms raw Ironic node data into a business-friendly format with relevant metadata.
 
+## Architecture Principles
+
+### Stateless Design
+
+The server listing workflow is stateless:
+
+- **No local cache**: Every list/get request queries Ironic directly for current state
+- **Real-time data**: Responses always reflect the current Ironic state, not cached data
+- **Computed fields**: Business logic fields like `is_available` are computed on each request from Ironic node state
+- **No aggregation tables**: Statistics are computed on-the-fly from Ironic data
+
 ## Goals
 
 1. Create server listing service with filtering capabilities
