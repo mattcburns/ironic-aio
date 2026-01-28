@@ -59,3 +59,5 @@ The `api/` folder contains a Python application that works as a sidecar to ironi
 - Keep business logic encapsulated within the API layer
 - Design for modularity and testability
 - Consider scalability and performance in design decisions
+- **DRY**: All designs should focus on reducing code duplication and emphasize
+  simple modification without requiring tons of context.
