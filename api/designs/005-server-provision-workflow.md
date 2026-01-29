@@ -28,6 +28,10 @@ The provisioning workflow is stateless:
 4. Provide operation status tracking
 5. Handle provisioning failures gracefully
 
+## Implementation Note
+
+**Ironic API calls should be left as stubs/TODOs.** Implement the full service structure, schemas, routers, and MCP tools, but leave the actual Ironic client method calls (e.g., setting deploy parameters, triggering provisioning, querying provision state) as TODO comments for manual implementation.
+
 ## Business Requirements
 
 Internal customers need to:
