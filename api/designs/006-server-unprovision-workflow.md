@@ -31,6 +31,10 @@ Operation tracking follows the same pattern as provisioning:
 3. Support optional data wiping/cleaning configuration
 4. Provide operation status tracking
 
+## Implementation Note
+
+**Ironic API calls should be left as stubs/TODOs.** Implement the full service structure, schemas, routers, and MCP tools, but leave the actual Ironic client method calls (e.g., triggering cleaning, querying unprovision state) as TODO comments for manual implementation.
+
 ## Business Requirements
 
 Internal customers need to:

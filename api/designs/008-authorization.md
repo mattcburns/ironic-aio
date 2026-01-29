@@ -26,6 +26,10 @@ Authorization remains stateless:
 3. Define clear permission model for API operations
 4. Maintain backward compatibility when auth is disabled
 
+## Implementation Note
+
+**Ironic API calls should be left as stubs/TODOs.** Implement the full authorization framework, but leave the actual Ironic client method calls (e.g., fetching node ownership/lessee fields) as TODO comments for manual implementation.
+
 ## Business Requirements
 
 - Admins can manage all servers

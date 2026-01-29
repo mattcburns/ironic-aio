@@ -27,6 +27,10 @@ The enrollment workflow is stateless:
 4. Provide sensible defaults while allowing customization
 5. Return enrolled server details
 
+## Implementation Note
+
+**Ironic API calls should be left as stubs/TODOs.** Implement the full service structure, schemas, routers, and MCP tools, but leave the actual Ironic client method calls (e.g., creating nodes, validating BMC connectivity) as TODO comments for manual implementation.
+
 ## Business Requirements
 
 Internal customers need to:

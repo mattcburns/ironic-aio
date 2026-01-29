@@ -27,6 +27,10 @@ The Ironic client wrapper follows the stateless architecture:
 4. Add Ironic connectivity to health checks
 5. Provide async-compatible interface
 
+## Implementation Note
+
+**Ironic API calls should be left as stubs/TODOs.** The implementer should create the client class structure, method signatures, and error handling framework, but leave the actual Ironic SDK calls as TODO comments for manual implementation. This allows the project owner to write the specific Ironic interaction logic themselves.
+
 ## Dependencies
 
 | Package | Version | Purpose |

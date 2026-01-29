@@ -26,6 +26,10 @@ The server listing workflow is stateless:
 3. Expose via REST endpoint and MCP tool
 4. Support pagination for large inventories
 
+## Implementation Note
+
+**Ironic API calls should be left as stubs/TODOs.** Implement the full service structure, schemas, routers, and MCP tools, but leave the actual Ironic client method calls (e.g., listing nodes, getting node details) as TODO comments for manual implementation.
+
 ## Business Requirements
 
 Internal customers need to:
