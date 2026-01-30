@@ -1,7 +1,7 @@
 # Dockerfile for Ironic AIO
 
 # Use the official Python image from the Docker Hub
-FROM python:3.9-slim
+FROM python:3.14-slim
 
 # Set the working directory
 WORKDIR /app

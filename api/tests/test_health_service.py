@@ -4,24 +4,17 @@ import pytest
 
 from config import get_settings
 from services.health import HealthService
-
-
-class FakeIronicClient:
-    """Test double for the Ironic client."""
-
-    def __init__(self, connected: bool) -> None:
-        self._connected = connected
-
-    async def check_connectivity(self) -> bool:
-        return self._connected
+from tests.conftest import FakeIronicClient
 
 
 @pytest.mark.asyncio
-async def test_health_service_returns_status() -> None:
+async def test_health_service_returns_status(
+    fake_ironic_client_connected: FakeIronicClient,
+) -> None:
     settings = get_settings()
     service = HealthService(
         settings=settings,
-        ironic_client=FakeIronicClient(connected=True),
+        ironic_client=fake_ironic_client_connected,
     )
     result = await service.check_health()
 
@@ -33,11 +26,13 @@ async def test_health_service_returns_status() -> None:
 
 
 @pytest.mark.asyncio
-async def test_health_service_degraded_when_ironic_down() -> None:
+async def test_health_service_degraded_when_ironic_down(
+    fake_ironic_client_disconnected: FakeIronicClient,
+) -> None:
     settings = get_settings()
     service = HealthService(
         settings=settings,
-        ironic_client=FakeIronicClient(connected=False),
+        ironic_client=fake_ironic_client_disconnected,
     )
     result = await service.check_health()
 
