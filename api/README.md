@@ -24,7 +24,7 @@ uvicorn app:app --host 0.0.0.0 --port 8000
 # Run all tests
 pytest
 
-# Run with coverage (enforcing 80% minimum)
+# Run with coverage (requires pytest-cov: `pip install pytest-cov`, enforcing 80% minimum)
 pytest --cov=. --cov-report=term-missing --cov-fail-under=80
 
 # Run specific test file
