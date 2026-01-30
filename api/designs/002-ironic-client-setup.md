@@ -1,6 +1,6 @@
 # Design 002: Ironic Client Setup
 
-**Status:** To Be Implemented
+**Status:** Implemented
 
 **Depends On:** Design 001
 

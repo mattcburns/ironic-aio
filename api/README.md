@@ -44,5 +44,6 @@ pytest -k "health"
 | pydantic-settings | Environment-based configuration management |
 | mcp | Model Context Protocol server implementation |
 | httpx | Async HTTP client used by MCP and future Ironic calls |
+| openstacksdk | Official OpenStack SDK used for Ironic client integration |
 | pytest | Testing framework |
 | pytest-asyncio | Async test support |
