@@ -4,6 +4,8 @@
 
 The `api/` folder contains a Python application that works as a sidecar to ironic-aio to encapsulate business logic. This API provides a clean interface for managing Ironic operations while keeping business-specific logic separate from the core Ironic infrastructure.
 
+See api/README.md for development setup and testing commands.
+
 ## Development Directives
 
 ### Python Dependencies

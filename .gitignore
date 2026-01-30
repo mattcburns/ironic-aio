@@ -6,3 +6,11 @@ ironic.conf
 ironic/
 htpasswd
 config/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.coverage
+.pytest_cache/
