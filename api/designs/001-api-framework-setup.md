@@ -1,6 +1,6 @@
 # Design 001: API Framework Setup
 
-**Status:** To Be Implemented
+**Status:** Implemented
 
 ## Overview
 
