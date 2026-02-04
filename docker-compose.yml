@@ -9,9 +9,18 @@ services:
       - ${IRONIC_VMEDIA_DIR:-/opt/ironic/vmedia}:/app/vmedia
     restart: unless-stopped
 
+  api:
+    image: ghcr.io/mattcburns/ironic-aio-api:v0.0.1
+    expose:
+      - 8000:8000
+    environment:
+      - IRONIC_AIO_IRONIC_API_URL=http://ironic:6385
+      - IRONIC_AIO_IRONIC_API_VERSION=1.82
+
   nginx:
     image: nginx:alpine
     ports:
+      - 443:443     # AIO API (HTTPS)
       - 6385:6385  # Ironic API (HTTPS)
       - 8080:8080   # VMedia server
     volumes:
