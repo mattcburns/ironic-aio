@@ -1,0 +1,4 @@
+# Overlay constraints for Ironic 34.0 standalone mode
+# Work around: ServiceLauncher(..., no_fork=True) incompat with newer oslo.service
+# Pin to a pre‑4.4.0 build known to work with single-process launchers
+oslo.service<4.4.0
