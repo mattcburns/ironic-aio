@@ -24,6 +24,7 @@ ENV OS_AUTH_TYPE=none \
 
 # Install dependencies
 COPY requirements.txt .
+COPY oslo-constraints.txt .
 # upper-constraints for master for now since 2026.1 hasn't been released yet
 RUN pip install --no-cache-dir -r requirements.txt -c https://raw.githubusercontent.com/openstack/requirements/refs/heads/master/upper-constraints.txt -c oslo-constraints.txt
 
