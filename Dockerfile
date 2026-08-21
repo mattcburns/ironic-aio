@@ -2,17 +2,19 @@
 # check=skip=SecretsUsedInArgOrEnv
 FROM python:3.12
 
+ARG TARGETARCH
+
 WORKDIR /app
 
 EXPOSE 6385
 
-RUN apt-get update && apt-get install -y jq \
-	isolinux \
-	syslinux-utils \
-	xorriso \
-	genisoimage \
-	&& apt-get clean \
-	&& rm -rf /var/lib/apt/lists/*
+# syslinux-utils (isohybrid) is not packaged for arm64 on Debian
+RUN apt-get update && \
+	pkgs="jq isolinux xorriso genisoimage" && \
+	if [ "$TARGETARCH" = "amd64" ]; then pkgs="$pkgs syslinux-utils"; fi && \
+	apt-get install -y $pkgs && \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /usr/lib/syslinux && \
 	ln -sf /usr/lib/ISOLINUX/isolinux.bin /usr/lib/syslinux/isolinux.bin || true
