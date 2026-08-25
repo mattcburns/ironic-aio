@@ -8,14 +8,19 @@ default_deploy_interface = direct
 enabled_inspect_interfaces = no-inspect,agent,redfish
 default_inspect_interface = redfish
 enable_bios_interfaces = no-bios,redfish
+# The "ipmi" hardware type only ships pxe/ipxe boot support upstream, which
+# this AIO does not provide (no bundled DHCP/TFTP/PXE infrastructure). Nodes
+# using the ipmi hardware type are limited to power/management control via
+# ipmitool; boot must be handled by external PXE infrastructure or by using
+# a hardware type with out-of-band virtual media (e.g. redfish) instead.
 enabled_boot_interfaces = redfish-virtual-media,redfish-https
 default_boot_interface = redfish-virtual-media
 enabled_console_interfaces = redfish-graphical
-enabled_hardware_types = redfish
-enabled_drivers = redfish
+enabled_hardware_types = redfish,ipmi
+enabled_drivers = redfish,ipmi
 enabled_firmware_interfaces = no-firmware,redfish
-enabled_management_interfaces = noop,redfish
-enabled_power_interfaces = fake,redfish
+enabled_management_interfaces = noop,redfish,ipmitool
+enabled_power_interfaces = fake,redfish,ipmitool
 enabled_raid_interfaces = no-raid,agent,redfish
 enabled_vendor_interfaces = no-vendor,redfish
 enabled_rescue_interfaces = agent
