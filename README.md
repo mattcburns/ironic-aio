@@ -6,7 +6,7 @@ Single‑container OpenStack Ironic (API + Conductor) for standalone bare metal 
 
 - **Standalone / noauth**: Simplest possible Ironic usage.
 - **Single process**: API + Conductor launched together.
-- **Redfish focus**: Only Redfish hardware + virtual media boot enabled.
+- **Redfish focus**: Redfish hardware + virtual media boot enabled by default, with optional IPMI power/management support (via `ipmitool`).
 - **Self‑maintaining DB**: Entry point creates/updates SQLite schema automatically.
 - **Deterministic releases**: GitHub tags produce immutable image tags (`vX.Y.Z`, `X.Y`, `X`).
 - **Fast local testing**: Minimal runtime dependencies; just mount config + DB file.
@@ -206,12 +206,19 @@ docker logs -f ironic | grep -i 'Loading'  # optional validation
 
 Minimal relevant defaults are already set (redfish only, json-rpc transport, sqlite). Adjust hardware driver settings as needed for your environment.
 
+### IPMI Support
+
+The image bundles `ipmitool`, and `ironic.conf.example` enables the `ipmi` hardware type with the `ipmitool` power/management interfaces alongside `redfish`. This lets you enroll nodes with `--driver ipmi` for power control and management (e.g. boot device, sensor data) over IPMI.
+
+Note that the upstream `ipmi` hardware type only supports `pxe`/`ipxe` boot interfaces, and this image does not bundle DHCP/TFTP/PXE infrastructure. IPMI-driven nodes therefore need boot handled by external PXE infrastructure; if your BMC also speaks Redfish, prefer the `redfish` hardware type for full virtual-media boot support.
+
 ## Node Management - CLI
 
 All of the commands below assume using the docker container for the baremetal
 cli and assumes that `docker compose exec ironic` is pre-pended for all operations.
 
 1. Enroll the node by creating it in the API: `baremetal node create --driver redfish --driver-info redfish_address=<redfish https endpoint> --driver-info redfish_username=<bmc user> --driver-info redfish_password=<bmc password> --driver-info redfish_verify_ca=False`
+   - For IPMI-only power/management instead: `baremetal node create --driver ipmi --driver-info ipmi_address=<bmc ip> --driver-info ipmi_username=<bmc user> --driver-info ipmi_password=<bmc password>`
 1. Make the node manageable: `baremetal node manage <node id>`
 1. Apply the network data for cleaning: `baremetal node set --network-data /app/servers/<server>/network_data.json <node id>`
 1. Make the node available for provisioning and trigger a cleaning: `baremetal node provide <node id>`

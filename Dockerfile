@@ -10,7 +10,7 @@ EXPOSE 6385
 
 # syslinux-utils (isohybrid) is not packaged for arm64 on Debian
 RUN apt-get update && \
-	pkgs="jq isolinux xorriso genisoimage" && \
+	pkgs="jq isolinux xorriso genisoimage ipmitool" && \
 	if [ "$TARGETARCH" = "amd64" ]; then pkgs="$pkgs syslinux-utils"; fi && \
 	apt-get install -y $pkgs && \
 	apt-get clean && \
